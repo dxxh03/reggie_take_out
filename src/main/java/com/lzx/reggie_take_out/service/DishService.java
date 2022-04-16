@@ -17,6 +17,6 @@ public interface DishService extends IService<Dish> {
     //更新菜品，同时更新对应的菜品信息
     public void updateWithFlavor(DishDto dishDto);
 
-    //删除菜品并删除对应的口味
+    //删除菜品并删除对应的口味，判断是否有套餐包含了该菜品
     boolean deleteDishWithFlavorByDishId(List<Long> ids);
 }

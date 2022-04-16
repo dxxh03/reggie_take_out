@@ -133,7 +133,7 @@ public class DishController {
     }
 
     /**
-     * 删除菜品，并删除对应的口味
+     * 删除菜品，并删除对应的口味，判断是否有套餐包含了该菜品
      *
      * @param ids
      * @return

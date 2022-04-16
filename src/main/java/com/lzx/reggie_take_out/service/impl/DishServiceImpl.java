@@ -2,16 +2,20 @@ package com.lzx.reggie_take_out.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.lzx.reggie_take_out.common.CustomException;
 import com.lzx.reggie_take_out.dto.DishDto;
 import com.lzx.reggie_take_out.entity.Dish;
 import com.lzx.reggie_take_out.entity.DishFlavor;
+import com.lzx.reggie_take_out.entity.SetmealDish;
 import com.lzx.reggie_take_out.mapper.DishMapper;
 import com.lzx.reggie_take_out.service.DishFlavorService;
 import com.lzx.reggie_take_out.service.DishService;
+import com.lzx.reggie_take_out.service.SetmealDishService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -26,6 +30,9 @@ public class DishServiceImpl extends ServiceImpl<DishMapper, Dish> implements Di
 
     @Autowired
     private DishFlavorService dishFlavorService;
+
+    @Autowired
+    private SetmealDishService setmealDishService;
 
     /**
      * 新增菜品，同时保存对应的口味数据
@@ -106,16 +113,28 @@ public class DishServiceImpl extends ServiceImpl<DishMapper, Dish> implements Di
         dishFlavorService.saveBatch(flavors);
     }
 
+    /**
+     * 删除菜品并删除对应的口味，判断是否有套餐包含了该菜品
+     *
+     * @param ids
+     * @return
+     */
     @Override
     public boolean deleteDishWithFlavorByDishId(List<Long> ids) {
-        for (Long id : ids) {
-            LambdaQueryWrapper<DishFlavor> dishFlavorLambdaQueryWrapper = new LambdaQueryWrapper<>();
-            dishFlavorLambdaQueryWrapper.eq(DishFlavor::getDishId, id);
-            boolean b1 = dishFlavorService.remove(dishFlavorLambdaQueryWrapper);
-            if (!b1) {
-                return false;
-            }
+
+        LambdaQueryWrapper<SetmealDish> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.in(SetmealDish::getDishId, ids);
+        List<SetmealDish> list = setmealDishService.list(lambdaQueryWrapper);
+        if (!CollectionUtils.isEmpty(list)) {
+            throw new CustomException("有套餐包含了这些菜品，想删除请将该套餐删除。");
         }
+
+        //删除这些菜品所包含的口味
+        LambdaQueryWrapper<DishFlavor> dishFlavorLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        dishFlavorLambdaQueryWrapper.in(DishFlavor::getDishId, ids);
+        dishFlavorService.remove(dishFlavorLambdaQueryWrapper);
+
+        //删除菜品
         boolean b2 = this.removeByIds(ids);
         if (!b2) {
             return false;
