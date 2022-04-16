@@ -1,6 +1,8 @@
 package com.lzx.reggie_take_out.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.lzx.reggie_take_out.common.CustomException;
 import com.lzx.reggie_take_out.dto.SetmealDto;
 import com.lzx.reggie_take_out.entity.Setmeal;
 import com.lzx.reggie_take_out.entity.SetmealDish;
@@ -45,6 +47,32 @@ public class SetmealSericeImpl extends ServiceImpl<SetmealMapper, Setmeal> imple
         }).collect(Collectors.toList());
 
         setmealDishService.saveBatch(setmealDishes);
+
+    }
+
+    /**
+     * 删除套餐，和套餐和菜品的关联关系
+     *
+     * @param ids
+     */
+    @Override
+    @Transactional
+    public void removeWithDish(List<Long> ids) {
+        LambdaQueryWrapper<Setmeal> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+
+        lambdaQueryWrapper.in(Setmeal::getId, ids);
+        lambdaQueryWrapper.eq(Setmeal::getStatus, 1);
+
+        int count = this.count(lambdaQueryWrapper);
+        if (count > 0) {
+            throw new CustomException("该套餐正在售卖中，不能删除");
+        }
+
+        this.removeByIds(ids);
+
+        LambdaQueryWrapper<SetmealDish> setmealDishLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        setmealDishLambdaQueryWrapper.in(SetmealDish::getSetmealId, ids);
+        setmealDishService.remove(setmealDishLambdaQueryWrapper);
 
     }
 }
