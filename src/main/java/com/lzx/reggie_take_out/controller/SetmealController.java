@@ -110,4 +110,22 @@ public class SetmealController {
 
         return R.success("该套餐删除成功");
     }
+
+    /**
+     * 修改套餐售卖状态。
+     *
+     * @param status
+     * @param ids
+     * @return
+     */
+    @PostMapping("/status/{status}")
+    public R<String> updateStatus(@PathVariable("status") int status, @RequestParam("ids") List<Long> ids) {
+        List<Setmeal> setmeals = setmealService.listByIds(ids);
+        setmeals = setmeals.stream().map(item -> {
+            item.setStatus(status);
+            return item;
+        }).collect(Collectors.toList());
+        setmealService.updateBatchById(setmeals);
+        return R.success("修改成功");
+    }
 }
