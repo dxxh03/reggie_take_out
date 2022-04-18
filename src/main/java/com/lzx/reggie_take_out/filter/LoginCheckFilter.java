@@ -59,7 +59,9 @@ public class LoginCheckFilter implements Filter {
             //log.info("用户已登录，用户id为：{}", request.getSession().getAttribute("employee"));
 
             //设置当前登录用户的id到ThreadLocal中
-            BaseContext.setCurrentId((Long) request.getSession().getAttribute("employee"));
+            Long employeeId = (Long) request.getSession().getAttribute("employee");
+            //log.info("employeeId = {}", employeeId);
+            BaseContext.setCurrentId(employeeId);
 
             filterChain.doFilter(request, response);
             return;
@@ -70,7 +72,9 @@ public class LoginCheckFilter implements Filter {
             //log.info("用户已登录，用户id为：{}", request.getSession().getAttribute("employee"));
 
             //设置当前登录用户的id到ThreadLocal中
-            BaseContext.setCurrentId((Long) request.getSession().getAttribute("user"));
+            Long userId = (Long) request.getSession().getAttribute("user");
+            //log.info("userId = {}", userId);
+            BaseContext.setCurrentId(userId);
 
             filterChain.doFilter(request, response);
             return;

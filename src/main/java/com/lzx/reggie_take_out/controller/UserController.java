@@ -44,7 +44,7 @@ public class UserController {
 
         if (StringUtils.isNotEmpty(phone)) {
             //生成随机的4位验证码
-            Integer code = ValidateCodeUtils.generateValidateCode(4);
+            String code = ValidateCodeUtils.generateValidateCode(4).toString();
             log.info("验证码code = {}", code);
 
             //调用阿里云提供的短信服务API完成发送短信
@@ -69,7 +69,9 @@ public class UserController {
         String phone = map.get("phone").toString();
         String code = map.get("code").toString();
 
-        Object codeInSession = session.getAttribute("phone");
+        Object codeInSession = session.getAttribute(phone);
+        log.info("map = {}", map);
+        log.info("codeInSession = {}", codeInSession);
 
         if (codeInSession != null && codeInSession.equals(code)) {
             LambdaQueryWrapper<User> lambdaQueryWrapper = new LambdaQueryWrapper<>();
@@ -81,6 +83,7 @@ public class UserController {
                 user.setStatus(1);
                 userService.save(user);
             }
+            session.setAttribute("user", user.getId());
             return R.success(user);
         }
         return R.error("登录失败");
