@@ -81,13 +81,39 @@ public class CategoryController {
         return R.success("分类修改成功");
     }
 
+
+    ///**
+    // * 根据条件查询分类数据
+    // *
+    // * @param category
+    // * @return
+    // */
+    //@GetMapping("/list")
+    //public R<List<Category>> list(Category category) {
+    //    //条件构造器
+    //    LambdaQueryWrapper<Category> queryWrapper = new LambdaQueryWrapper<>();
+    //    //添加条件
+    //    queryWrapper.eq(category.getType() != null, Category::getType, category.getType());
+    //    //添加排序条件
+    //    queryWrapper.orderByAsc(Category::getSort).orderByDesc(Category::getUpdateTime);
+    //
+    //    List<Category> list = categoryService.list(queryWrapper);
+    //    return R.success(list);
+    //}
+
+    /**
+     * 根据条件查询分类数据
+     *
+     * @param category
+     * @return
+     */
     @GetMapping("/list")
     public R<List<Category>> list(Category category) {
         //条件构造器
         LambdaQueryWrapper<Category> lambdaQueryWrapper = new LambdaQueryWrapper<>();
 
         //添加条件
-        lambdaQueryWrapper.eq(StringUtils.isNotEmpty(String.valueOf(category.getType())), Category::getType, category.getType());
+        lambdaQueryWrapper.eq(category.getType() != null, Category::getType, category.getType());
 
         //添加排序规则
         lambdaQueryWrapper.orderByAsc(Category::getSort).orderByDesc(Category::getUpdateTime);
